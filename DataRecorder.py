@@ -34,7 +34,7 @@ class DataRecorder:
         self.inCapturing=False
         self.pre=preLength
         self.post=postLength
-        self.__caputredSignalListner=[self.handleCapturedSignal]
+        self.__caputredSignalListner=[]
 
 
     def startReading(self):
@@ -130,6 +130,12 @@ class DataRecorder:
         self.stopRecording()
         self.showSaveMsg()
 
+    def registerFemgHandler(self, fn):
+        self.__caputredSignalListner.append(fn)
+
+    def examnLiveData(self,raw,ffemg):
+        print("I don't know ..plz ask irfan to send me his code ;0")
+
 
     def showSaveMsg(self):
         root=Tk()
@@ -197,6 +203,7 @@ def pr(i):
 if __name__ == '__main__':
     recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True)
     recorder.addCallBack(pr)
+    recorder.registerFemgHandler(recorder.handleCapturedSignal)
     recorder.addCallBack(recorder.thresholdCapture)
     recorder.startReading()
     recorder.showPlot()
