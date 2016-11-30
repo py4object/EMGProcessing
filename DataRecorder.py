@@ -10,6 +10,7 @@ import numpy as np
 import scipy
 from Tkinter import *
 import time,datetime
+from  wrapper_bpnn import WrapperBPNN  as wrp
 
 class DataRecorder:
     def __init__(self,tty,serialSpeed,outputPath,upthreshold=5,downthreshold=5,isThresholdRelativeToMean=True,preLength=10,postLength=120,mode='threshold'):
@@ -35,6 +36,7 @@ class DataRecorder:
         self.pre=preLength
         self.post=postLength
         self.__caputredSignalListner=[]
+        self.wp=wrp()
 
 
     def startReading(self):
@@ -93,11 +95,11 @@ class DataRecorder:
     def __updatePlotData(self, i):
         self.plotY.popleft()
         self.plotY.append(i)
-        if self.minY!=min(self.plotY) or self.maxY!=self.minY:
-            self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
-            self.plt.relim()
-            self.plt.autoscale_view()
-            plt.draw()
+        # if self.minY!=min(self.plotY) or self.maxY!=self.minY:
+        #     self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+        #     self.plt.relim()
+        #     self.plt.autoscale_view()
+        #     plt.draw()
 
     def thresholdCapture(self, i):
         self.buffer.append(i)
@@ -120,9 +122,17 @@ class DataRecorder:
 
 
     def fft(self,record):
-        recod=list(record)
+        Fs = 1000
+        Fn=Fs/2
+        record=list(record)
         L=len(record)
-        return scipy.fft(recod)*2/L
+        Ts=np.arange(0,L)/float(Fs)
+        Femg=scipy.fft(record)*2/L
+        FreqVector=np.linspace(0,1,np.fix(L/2))*Fn
+        indexV=np.arange(1,len(FreqVector))
+        Femg=abs(Femg[indexV])
+        return Femg
+
 
     def handleCapturedSignal(self, record,ffemg):
         self.rawRecord=record
@@ -134,7 +144,15 @@ class DataRecorder:
         self.__caputredSignalListner.append(fn)
 
     def examnLiveData(self,raw,ffemg):
-        print("I don't know ..plz ask irfan to send me his code ;0")
+
+        print("we are trying to classfiy it !!!!!")
+        begin, end, step = 0, 64, 2
+        mv=ffemg[begin:end:step]
+        actual_test_data=[
+            [mv]
+        ]
+        self.wp.test_network(actual_test_data)
+
 
 
     def showSaveMsg(self):
@@ -158,6 +176,7 @@ class DataRecorder:
         print ('saved')
         inFileName=self.saveSubjectName.get()
         ts=time.time()
+        print(self.ffemgRecord)
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
         np.savetxt(fname=self.outputPath+st+"_"+inFileName.upper()+".raw",X=self.rawRecord)
         np.savetxt(fname=self.outputPath+st+"_"+inFileName.upper()+".fq",X=self.ffemgRecord)
@@ -201,9 +220,9 @@ def pr(i):
     pass
 
 if __name__ == '__main__':
-    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True)
+    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True,upthreshold=20,downthreshold=20)
     recorder.addCallBack(pr)
-    recorder.registerFemgHandler(recorder.handleCapturedSignal)
+    recorder.registerFemgHandler(recorder.examnLiveData)
     recorder.addCallBack(recorder.thresholdCapture)
     recorder.startReading()
     recorder.showPlot()
