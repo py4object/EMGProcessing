@@ -9,6 +9,7 @@ import progressbar
 class WrapperBPNN:
 
     def __init__(self):
+        self.begin, self.end, self.step = 0, 64, 8
         self.init_network()
 
     def test_network(self, test_data):
@@ -18,13 +19,15 @@ class WrapperBPNN:
         elapsed_time = time.time() - start_time
         print "Net classification result w/ threshold"
         for data in test_data:
-            print ('----->', self.threshold(self.nn.update(data[0])))
+            print (
+                'Actual result is: ', self.threshold(self.nn.update(data[0])), "The correct result is: ", data[1])
         print "Time elapsed druing classifying: {0}".format(elapsed_time)
 
     def init_network(self):
         # TODO: Init NN dynamically (accord. to data training lengths)
         try:
             self.training_data = self.get_training_data()
+            self.testing_data = self.get_testing_data()
             self.nn = NN.NN(self.ni, self.nh, self.no)
             if(self.load_network()):
                 self.nwstatus = "Loaded"
@@ -37,12 +40,11 @@ class WrapperBPNN:
 
     def get_training_data(self, path="samples/", reg="fq"):
         print "Getting training data from: ", path
-        begin = 0
-        end = 64
-        step = 8
+        # TODO: Setting the sample rates begin,end,step here OR dimensions of
+        # nw according to the training data
         ninput = 0
-        for i in range(end):
-            if i % step == 0:
+        for i in range(self.end):
+            if i % self.step == 0:
                 ninput += 1
         try:
             movs = os.listdir(path)
@@ -61,16 +63,37 @@ class WrapperBPNN:
                         if reg in samples[j]:
                             spath = dirpath + "/" + samples[j]
                             sdata = np.loadtxt(fname=spath)
-                            data.append([sdata[begin:end:step], eye[i]])
+                            data.append(
+                                [sdata[self.begin:self.end:self.step], eye[i]])
                     except Exception as e:
-                            print (e)
-                            print (samples[j])
+                        print (e)
+                        print (samples[j])
             return data
         except Exception as e:
             print "Unexpected error:", e
 
         else:
             print "Training data Successfully loaded"
+
+    def get_testing_data(self, path="test/", reg="fq"):
+        try:
+            test_data = []
+            eye = np.eye(self.no)
+            test_movs = os.listdir(path)
+            num_mov = len(test_movs)
+            for i in range(len(test_movs)):
+                dirpath = path + "/" + test_movs[i] + "/"
+                tdata_subfolder = os.listdir(dirpath)
+                for j in range(len(tdata_subfolder)):
+                    if reg in tdata_subfolder[j]:
+                        tpath = dirpath + "/" + tdata_subfolder[j]
+                        tdata = np.loadtxt(fname=tpath)
+                        test_data.append(
+                            [tdata[self.begin:self.end:self.step], eye[i]])
+            return test_data
+        except Exception as e:
+            raise Exception(
+                "There was an error while loading TEST file. Cannot load it!")
 
     def train_network(self, epoch=1000, lr=0.1):
         try:
@@ -175,22 +198,7 @@ class WrapperBPNN:
 
 if __name__ == '__main__':
     wrp = WrapperBPNN()
-    # TODO: Write a function for load training data into arrays
-    down = np.loadtxt(fname="test/2016-12-01-00-40-52_DOWN.fq")
-    up = np.loadtxt(fname="test/2016-12-01-00-40-41_UP.fq")
-    # open3 = np.loadtxt(fname="test/open3.txtfq")
-    begin, end, step = 0, 64, 8
-    d1 = down[begin:end:step]
-    u1 = up[begin:end:step]
-    # o3 = open3[begin:end:step]
-
-    actual_test_data = [
-        [d1],
-        [u1]
-        # ,    [o3]
-    ]
-
     wrp.train_network(epoch=5000)
-    wrp.test_network(actual_test_data)
+    wrp.test_network(wrp.testing_data)
     wrp.save_network()
     # print wrp.training_data
