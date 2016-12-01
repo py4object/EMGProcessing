@@ -119,8 +119,6 @@ class WrapperBPNN:
             dt = datetime.datetime.now()
             history_path = path + "old/"
             latest_path = path + "latest/"
-            if not os.path.exists("saves/"):
-                os.mkdir("saves/")
             if not os.path.exists(path):
                 os.mkdir(path)
             if not os.path.exists(history_path):
