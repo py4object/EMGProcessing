@@ -39,7 +39,7 @@ class WrapperBPNN:
         print "Getting training data from: ", path
         begin = 0
         end = 64
-        step = 2
+        step = 8
         ninput = 0
         for i in range(end):
             if i % step == 0:
@@ -176,10 +176,10 @@ class WrapperBPNN:
 if __name__ == '__main__':
     wrp = WrapperBPNN()
     # TODO: Write a function for load training data into arrays
-    down = np.loadtxt(fname="test/2016-12-01-00-41-11_DOWN.fq")
-    up = np.loadtxt(fname="test/2016-12-01-00-41-04_UP.fq")
+    down = np.loadtxt(fname="test/2016-12-01-00-40-52_DOWN.fq")
+    up = np.loadtxt(fname="test/2016-12-01-00-40-41_UP.fq")
     # open3 = np.loadtxt(fname="test/open3.txtfq")
-    begin, end, step = 0, 64, 2
+    begin, end, step = 0, 64, 8
     d1 = down[begin:end:step]
     u1 = up[begin:end:step]
     # o3 = open3[begin:end:step]
