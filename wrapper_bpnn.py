@@ -117,9 +117,16 @@ class WrapperBPNN:
     def save_network(self, path="saves/nwstatus/"):
         try:
             dt = datetime.datetime.now()
-            # TODO: create folders if they dont exist.
             history_path = path + "old/"
             latest_path = path + "latest/"
+            if not os.path.exists("saves/"):
+                os.mkdir("saves/")
+            if not os.path.exists(path):
+                os.mkdir(path)
+            if not os.path.exists(history_path):
+                os.mkdir(history_path)
+            if not os.path.exists(latest_path):
+                os.mkdir(latest_path)
             # store current status in a HISTORY folder called OLD that stores all
             # of the past training data
             fwi_old = history_path + self.gen_filename_dtnow("wi", dtnow=dt)
