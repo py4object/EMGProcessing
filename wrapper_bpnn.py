@@ -38,8 +38,8 @@ class WrapperBPNN:
     def get_training_data(self, path="samples/", reg="fq"):
         print "Getting training data from: ", path
         begin = 0
-        end = 64
-        step = 8
+        end = 74
+        step = 1
         ninput = 0
         for i in range(end):
             if i % step == 0:
@@ -72,7 +72,7 @@ class WrapperBPNN:
         else:
             print "Training data Successfully loaded"
 
-    def train_network(self, epoch=1000, lr=0.1):
+    def train_network(self, epoch=1000, lr=0.01):
         try:
             training_data = self.training_data
             start = time.time()
@@ -176,10 +176,10 @@ class WrapperBPNN:
 if __name__ == '__main__':
     wrp = WrapperBPNN()
     # TODO: Write a function for load training data into arrays
-    down = np.loadtxt(fname="test/2016-12-01-00-40-52_DOWN.fq")
-    up = np.loadtxt(fname="test/2016-12-01-00-40-41_UP.fq")
+    down = np.loadtxt(fname="test/2016-12-02-03-15-13_CLOSE.fq")
+    up = np.loadtxt(fname="test/2016-12-02-03-16-47_OPEN.fq")
     # open3 = np.loadtxt(fname="test/open3.txtfq")
-    begin, end, step = 0, 64, 8
+    begin, end, step = 0,74,1
     d1 = down[begin:end:step]
     u1 = up[begin:end:step]
     # o3 = open3[begin:end:step]
@@ -190,7 +190,7 @@ if __name__ == '__main__':
         # ,    [o3]
     ]
 
-    wrp.train_network(epoch=5000)
+    wrp.train_network(epoch=100000)
     wrp.test_network(actual_test_data)
     wrp.save_network()
     # print wrp.training_data

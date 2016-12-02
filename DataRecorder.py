@@ -21,12 +21,12 @@ class DataRecorder:
         self.downthreshold=downthreshold
         self.__isReading=False
         self.__inputLisners=[]
-        self.maxPlotLen=300
+        self.maxPlotLen=500
         self.plotY=deque([0.0]*self.maxPlotLen)
         self.plotX=np.arange(0,self.maxPlotLen)
         self.figure=plt.figure()
-        self.minY=260
-        self.maxY=350
+        self.minY=180
+        self.maxY=400
         self.plt= plt.axes(xlim=(0, self.maxPlotLen), ylim=(self.minY,self.maxY))
         self.plt.grid(True)
         self.line,=self.plt.plot([],[],lw=2)
@@ -63,13 +63,20 @@ class DataRecorder:
                 if self.isThresholdRelativeToMean==True and self.mean ==-1:
                     tempArray=[]
                     print('plz hold static while calculating the mean')
-                    for i in range(1000):
-                        print_progress(iteration=i,total=999)
+                    for i in range(500):
+                        print_progress(iteration=i,total=499)
                         tempArray.append(self.__readIntFromSerial())
                     self.mean=sum(tempArray)/len(tempArray)
                     print ("the mean is "+str(self.mean))
                     self.upthreshold=self.mean+self.upthreshold
+                    plt.axhline(y=self.upthreshold)
                     self.downthreshold=self.mean-self.downthreshold
+                    plt.axhline(y=self.downthreshold)
+                    self.plt.relim()
+                    plt.autoscale()
+                    self.plt.autoscale_view()
+                    # self.plt.hide()
+                    plt.draw()
                     print(str(self.upthreshold) +" "+str(self.downthreshold))
                 value=self.__readIntFromSerial()
                 for callback in self.__inputLisners:
@@ -95,18 +102,17 @@ class DataRecorder:
     def __updatePlotData(self, i):
         self.plotY.popleft()
         self.plotY.append(i)
-        # if self.minY!=min(self.plotY) or self.maxY!=self.minY:
-        #     self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
-        #     self.plt.relim()
-        #     self.plt.autoscale_view()
-        #     plt.draw()
+        if self.minY!=min(self.plotY) or self.maxY!=self.minY:
+            self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+            self.plt.relim()
+            # self.plt.autoscale_view()
+            plt.draw()
 
     def thresholdCapture(self, i):
         self.buffer.append(i)
         if (i >self.upthreshold or i <self.downthreshold) and not self.inCapturing :
             self.inCapturing=True
             # print('in capturing')
-
         if(self.pre+self.post ==len(self.buffer)) and self.inCapturing==True:
             self.inCapturing=False
             fftEmg=self.fft(self.buffer)
@@ -118,6 +124,11 @@ class DataRecorder:
         elif not self.inCapturing:
             if(len(self.buffer)==self.pre):
                 self.buffer.popleft()
+
+# def thresholdCapturev2(self,i):
+#     self.buffer.append(i)
+#     if (i >self.upthreshold or i <self.downthreshold) and not self.inCapturing :
+#             self.inCapturing=True
 
 
 
@@ -146,12 +157,12 @@ class DataRecorder:
     def examnLiveData(self,raw,ffemg):
 
         print("we are trying to classfiy it !!!!!")
-        begin, end, step = 0, 64, 2
-        mv=ffemg[begin:end:step]
-        actual_test_data=[
-            [mv]
-        ]
-        self.wp.test_network(actual_test_data)
+        # begin, end, step = 0, 64, 2
+        # mv=ffemg[begin:end:step]
+        # actual_test_data=[
+        #     [mv]
+        # ]
+        # self.wp.test_network(actual_test_data)
 
 
 
@@ -178,7 +189,7 @@ class DataRecorder:
         ts=time.time()
         print(self.ffemgRecord)
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
-        np.savetxt(fname=self.outputPath+st+"_"+inFileName.upper()+".raw",X=self.rawRecord)
+        np.savetxt(fname=self.outputPath+st+"_"+inFileName.upper()+".raw",fmt='%i',X=self.rawRecord)
         np.savetxt(fname=self.outputPath+st+"_"+inFileName.upper()+".fq",X=self.ffemgRecord)
         self.cleanup()
 
@@ -220,7 +231,7 @@ def pr(i):
     pass
 
 if __name__ == '__main__':
-    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True,upthreshold=20,downthreshold=20)
+    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True,upthreshold=60,downthreshold=70,postLength=120,preLength=30)
     recorder.addCallBack(pr)
     recorder.registerFemgHandler(recorder.examnLiveData)
     recorder.addCallBack(recorder.thresholdCapture)

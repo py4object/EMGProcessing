@@ -154,5 +154,5 @@ class NN:
                 targets = p[1]
                 self.update(inputs)
                 error = error + self.backPropagate(targets, N, M)
-            # if i % 100 == 0:
-            #     print('error %-.7f' % error)
+            if i % 100 == 0:
+                print('error %-.7f' % error)
