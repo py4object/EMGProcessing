@@ -9,6 +9,8 @@ import progressbar
 class WrapperBPNN:
 
     def __init__(self):
+
+        self.attr=[2, 25, 26, 28, 31, 32, 33, 37, 40, 46, 50, 52, 54, 57, 58, 59, 60, 62, 64, 66, 67, 68, 69, 70, 71, 72]
         self.begin, self.end, self.step = 0, 64, 8
         self.init_network()
 
@@ -49,9 +51,12 @@ class WrapperBPNN:
         try:
             movs = os.listdir(path)
             num_movement = len(movs)
-            self.ni = ninput
+            # self.ni = ninput
+            # self.no = num_movement
+            # self.nh = ninput + 2
+            self.ni = len(self.attr)
             self.no = num_movement
-            self.nh = ninput + 2
+            self.nh = ninput+5
             eye = np.eye(num_movement)
 
             data = []
@@ -64,7 +69,7 @@ class WrapperBPNN:
                             spath = dirpath + "/" + samples[j]
                             sdata = np.loadtxt(fname=spath)
                             data.append(
-                                [sdata[self.begin:self.end:self.step], eye[i]])
+                                [[sdata[j] for j in self.attr], eye[i]])
                     except Exception as e:
                         print (e)
                         print (samples[j])
@@ -89,13 +94,13 @@ class WrapperBPNN:
                         tpath = dirpath + "/" + tdata_subfolder[j]
                         tdata = np.loadtxt(fname=tpath)
                         test_data.append(
-                            [tdata[self.begin:self.end:self.step], eye[i]])
+                            [ [tdata[j] for j in self.attr], eye[i]])
             return test_data
         except Exception as e:
             raise Exception(
                 "There was an error while loading TEST file. Cannot load it!")
 
-    def train_network(self, epoch=1000, lr=0.1):
+    def train_network(self, epoch=1000, lr=0.1,M=0.1):
         try:
             training_data = self.training_data
             start = time.time()
@@ -104,7 +109,7 @@ class WrapperBPNN:
                 '=', '[', ']'), ' ', progressbar.Percentage()])
             bar.start()
             for i in range(epoch):
-                self.nn.train(training_data, 1, lr)
+                self.nn.train(training_data, 1, lr,M)
                 bar.update(i + 1)
             bar.finish()
             elapsed_time = time.time() - start
@@ -203,7 +208,7 @@ class WrapperBPNN:
 
 if __name__ == '__main__':
     wrp = WrapperBPNN()
-    wrp.train_network(epoch=100000)
+    wrp.train_network(epoch=100000,lr=0.2,M=0.1)
     wrp.test_network(wrp.testing_data)
     wrp.save_network()
     # print wrp.training_data

@@ -38,13 +38,20 @@ for rawFile in rawFiles:
 print(len(values))
 # print(values[0])
 
-result="@RELATION adsa\n"
+result="@RELATION UP_DOWN\n"
+
+result+="@ATTRIBUTE  class {UP,DOWN}\n"
 for att in attr:
     result+="@ATTRIBUTE {0} numeric\n".format(att)
 
+
+
 result+="@DATA\n"
-for value in values:
-    result+=( ",".join(format(x, "10.3f") for x in value))
+
+for i in range(0,len(values)):
+    result+=("{0} ,").format(inputs[i].split("_")[1].strip(".raw"))
+    result+=( ",".join(format(x, "10.3f") for x in values[i]))
+
     result+=("\n")
 text_file = open("Output.txt", "w")
 text_file.write(result)

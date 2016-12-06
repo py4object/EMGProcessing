@@ -66,7 +66,7 @@ class DataRecorder:
                     for i in range(500):
                         print_progress(iteration=i,total=499)
                         tempArray.append(self.__readIntFromSerial())
-                    self.mean=sum(tempArray)/len(tempArray)
+                    self.mean=sum(tempArray)/float(len(tempArray))
                     print ("the mean is "+str(self.mean))
                     self.upthreshold=self.mean+self.upthreshold
                     plt.axhline(y=self.upthreshold)
@@ -231,7 +231,7 @@ def pr(i):
     pass
 
 if __name__ == '__main__':
-    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="samples/",isThresholdRelativeToMean=True,upthreshold=60,downthreshold=70,postLength=120,preLength=30)
+    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="hocaData/",isThresholdRelativeToMean=True,upthreshold=6,downthreshold=6,postLength=120,preLength=30)
     recorder.addCallBack(pr)
     recorder.registerFemgHandler(recorder.examnLiveData)
     recorder.addCallBack(recorder.thresholdCapture)
