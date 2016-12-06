@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 from collections import deque
 import matplotlib.animation as animation
 import numpy as np
+from numpy import *
 import scipy
+from scipy import *
 from Tkinter import *
 import time,datetime
-from  wrapper_bpnn import WrapperBPNN  as wrp
+from nn import init,classfiy1,classfiy2
 
 class DataRecorder:
     def __init__(self,tty,serialSpeed,outputPath,upthreshold=5,downthreshold=5,isThresholdRelativeToMean=True,preLength=10,postLength=120,mode='threshold'):
@@ -25,8 +27,8 @@ class DataRecorder:
         self.plotY=deque([0.0]*self.maxPlotLen)
         self.plotX=np.arange(0,self.maxPlotLen)
         self.figure=plt.figure()
-        self.minY=180
-        self.maxY=400
+        self.minY=290
+        self.maxY=320
         self.plt= plt.axes(xlim=(0, self.maxPlotLen), ylim=(self.minY,self.maxY))
         self.plt.grid(True)
         self.line,=self.plt.plot([],[],lw=2)
@@ -36,7 +38,8 @@ class DataRecorder:
         self.pre=preLength
         self.post=postLength
         self.__caputredSignalListner=[]
-        self.wp=wrp()
+        init()
+
 
 
     def startReading(self):
@@ -73,8 +76,8 @@ class DataRecorder:
                     self.downthreshold=self.mean-self.downthreshold
                     plt.axhline(y=self.downthreshold)
                     self.plt.relim()
-                    plt.autoscale()
-                    self.plt.autoscale_view()
+                    # plt.autoscale()
+                    # self.plt.autoscale_view()
                     # self.plt.hide()
                     plt.draw()
                     print(str(self.upthreshold) +" "+str(self.downthreshold))
@@ -91,6 +94,14 @@ class DataRecorder:
 
     def updatePlot(self, i):
         self.line.set_data(self.plotX,self.plotY)
+        try:
+            # self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+            pass
+        except Exception as e:
+            raise
+        else:
+            pass
+
         return self.line,
 
     def showPlot(self):
@@ -103,7 +114,7 @@ class DataRecorder:
         self.plotY.popleft()
         self.plotY.append(i)
         if self.minY!=min(self.plotY) or self.maxY!=self.minY:
-            self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+
             self.plt.relim()
             # self.plt.autoscale_view()
             plt.draw()
@@ -132,15 +143,14 @@ class DataRecorder:
 
 
 
-    def fft(self,record):
-        Fs = 1000
+    def fft(self,y):
+        Fs = 1000;  # sampling rate
         Fn=Fs/2
-        record=list(record)
-        L=len(record)
-        Ts=np.arange(0,L)/float(Fs)
-        Femg=scipy.fft(record)*2/L
-        FreqVector=np.linspace(0,1,np.fix(L/2))*Fn
-        indexV=np.arange(1,len(FreqVector))
+        L=len(y)
+        Ts=arange(0,L)/float(Fs)
+        Femg=scipy.fft(y)*2/L
+        FreqVector=linspace(0,1,fix(L/2))*Fn
+        indexV=arange(1,len(FreqVector))
         Femg=abs(Femg[indexV])
         return Femg
 
@@ -157,12 +167,9 @@ class DataRecorder:
     def examnLiveData(self,raw,ffemg):
 
         print("we are trying to classfiy it !!!!!")
-        # begin, end, step = 0, 64, 2
-        # mv=ffemg[begin:end:step]
-        # actual_test_data=[
-        #     [mv]
-        # ]
-        # self.wp.test_network(actual_test_data)
+        print (classfiy1([ffemg]))
+        print (classfiy2([ffemg]))
+
 
 
 
@@ -231,10 +238,17 @@ def pr(i):
     pass
 
 if __name__ == '__main__':
-    recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="hocaData/",isThresholdRelativeToMean=True,upthreshold=6,downthreshold=6,postLength=120,preLength=30)
-    recorder.addCallBack(pr)
-    recorder.registerFemgHandler(recorder.examnLiveData)
-    recorder.addCallBack(recorder.thresholdCapture)
-    recorder.startReading()
-    recorder.showPlot()
+    try:
+        pass
+
+        recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="omar2/",isThresholdRelativeToMean=True,upthreshold=8,downthreshold=8,postLength=120,preLength=30)
+        recorder.addCallBack(pr)
+        recorder.registerFemgHandler(recorder.examnLiveData)
+        recorder.addCallBack(recorder.thresholdCapture)
+        recorder.startReading()
+        recorder.showPlot()
     # recorder.showSaveMsg()
+    except Exception as e:
+        raise
+    else:
+        pass
