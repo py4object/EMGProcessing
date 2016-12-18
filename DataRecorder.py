@@ -6,6 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 from collections import deque
 import matplotlib.animation as animation
+import thread
 import numpy as np
 from numpy import *
 import scipy
@@ -13,6 +14,9 @@ from scipy import *
 from Tkinter import *
 import time,datetime
 from nn import init,classfiy1,classfiy2
+import requests
+import json
+
 
 class DataRecorder:
     def __init__(self,tty,serialSpeed,outputPath,upthreshold=5,downthreshold=5,isThresholdRelativeToMean=True,preLength=10,postLength=120,mode='threshold'):
@@ -27,8 +31,8 @@ class DataRecorder:
         self.plotY=deque([0.0]*self.maxPlotLen)
         self.plotX=np.arange(0,self.maxPlotLen)
         self.figure=plt.figure()
-        self.minY=290
-        self.maxY=320
+        self.minY=200
+        self.maxY=300
         self.plt= plt.axes(xlim=(0, self.maxPlotLen), ylim=(self.minY,self.maxY))
         self.plt.grid(True)
         self.line,=self.plt.plot([],[],lw=2)
@@ -66,8 +70,8 @@ class DataRecorder:
                 if self.isThresholdRelativeToMean==True and self.mean ==-1:
                     tempArray=[]
                     print('plz hold static while calculating the mean')
-                    for i in range(500):
-                        print_progress(iteration=i,total=499)
+                    for i in range(1000):
+                        print_progress(iteration=i,total=999)
                         tempArray.append(self.__readIntFromSerial())
                     self.mean=sum(tempArray)/float(len(tempArray))
                     print ("the mean is "+str(self.mean))
@@ -95,7 +99,8 @@ class DataRecorder:
     def updatePlot(self, i):
         self.line.set_data(self.plotX,self.plotY)
         try:
-            # self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+            self.plt.set_ylim([min(self.plotY)-5,max(self.plotY)+5])
+
             pass
         except Exception as e:
             raise
@@ -165,10 +170,13 @@ class DataRecorder:
         self.__caputredSignalListner.append(fn)
 
     def examnLiveData(self,raw,ffemg):
-
+        pass
         print("we are trying to classfiy it !!!!!")
-        print (classfiy1([ffemg]))
+        result= (classfiy1([ffemg]))
+        print result
+        thread.start_new_thread(post,(result,))
         print (classfiy2([ffemg]))
+
 
 
 
@@ -209,8 +217,9 @@ class DataRecorder:
 
 
 
-
-
+def post(result):
+    requests.post('http://10.151.42.251:8000/api/pizza/da',json={"data":result.lower()})
+    pass
 def print_progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100):
     """
     Call in a loop to create terminal progress bar
@@ -241,7 +250,7 @@ if __name__ == '__main__':
     try:
         pass
 
-        recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="omar2/",isThresholdRelativeToMean=True,upthreshold=8,downthreshold=8,postLength=120,preLength=30)
+        recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="data_repo/raw/Enes_6_6_30_120/",isThresholdRelativeToMean=True,upthreshold=6,downthreshold=6,postLength=120,preLength=30)
         recorder.addCallBack(pr)
         recorder.registerFemgHandler(recorder.examnLiveData)
         recorder.addCallBack(recorder.thresholdCapture)

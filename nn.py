@@ -64,16 +64,28 @@ def test1():
         downP=clf.predict(testset['DOWN'])
         print ( len (list((a for a in downP if not compareArray(a,[0,1])))))
         # print (downP)
-clf1=MLPClassifier(hidden_layer_sizes=(38,),random_state=0,max_iter=1000,**params[13])
-clf2=MLPClassifier(hidden_layer_sizes=(38,),random_state=0,max_iter=1000,**params[14])
+clf1=MLPClassifier(warm_start=True,hidden_layer_sizes=(38,),random_state=0,max_iter=1000,**params[13])
+clf2=MLPClassifier(warm_start=True,hidden_layer_sizes=(38,),random_state=0,max_iter=1000,**params[14])
 def init():
     global clf1,clf2
-    traningset=get_data_from_arff('UPDOWN134_6_6.arff')
-    F=traningset['UP']+traningset['DOWN']
-    Y=[[1,0] for i in traningset['UP']]+[[0,1] for i in traningset['DOWN']]
-    clf1.fit(F,Y)
-    clf2.fit(F,Y)
+    dataset=[
+    "data_repo/arff/UPDOWN134_6_6.arff",
+    # "data_repo/arff/50_6_6train.arff",
+    # "data_repo/arff/AbudUpDown24_6_6.arff",
+    # "data_repo/arff/AbudUpDown35_6_6.arff",
+    # "data_repo/arff/UPDOWN22_6_6.arff",
+    # "data_repo/arff/50_6_6train.arff",
+    # "data_repo/arff/Omar46_6_6.arff",
+    # "data_repo/arff/omarTest19_6_6.arff"
+    ]
 
+    for i in range(3):
+        for data in dataset:
+            traningset=get_data_from_arff(data)
+            F=traningset['UP']+traningset['DOWN']
+            Y=[[1,0] for i in traningset['UP']]+[[0,1] for i in traningset['DOWN']]
+            clf1.fit(F,Y)
+            clf2.fit(F,Y)
 def classfiy1(array):
     global clf1
     result =clf1.predict(array)[0]
