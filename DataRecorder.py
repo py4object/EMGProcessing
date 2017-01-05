@@ -12,10 +12,12 @@ from numpy import *
 import scipy
 from scipy import *
 from Tkinter import *
+import Tkinter as tk
 import time,datetime
 from nn import init,classfiy1,classfiy2
 import requests
 import json
+from pythonSocket import socketController
 
 
 class DataRecorder:
@@ -42,6 +44,8 @@ class DataRecorder:
         self.pre=preLength
         self.post=postLength
         self.__caputredSignalListner=[]
+        self.fff=0;
+        self.socketController=socketController('localhost',8080)
         init()
 
 
@@ -171,23 +175,35 @@ class DataRecorder:
 
     def examnLiveData(self,raw,ffemg):
         pass
-        print("we are trying to classfiy it !!!!!")
+        print("we are trying to classfiy it !!!!!" +str(self.fff))
+        self.fff=self.fff+1
         result= (classfiy1([ffemg]))
         print result
-        thread.start_new_thread(post,(result,))
+        self.socketController.sendData('emg',result)
         print (classfiy2([ffemg]))
+        print("--------------------------------------")
+
+    def handleCapturedSignalW(self, record,ffemg):
+        self.rawRecord=record
+        self.ffemgRecord=ffemg
+        self.stopRecording()
+        result= (classfiy1([ffemg]))
+
+        self.showSaveMsg(msg=result)
 
 
 
 
 
-    def showSaveMsg(self):
+    def showSaveMsg(self,msg=''):
         root=Tk()
         self.root=Frame(root)
         lable=Label(self.root,text="please enter the the MovmentType")
-        filename=Entry(self.root)
+        v = StringVar()
+        filename=Entry(self.root,textvariable=v)
         lable.pack()
         filename.pack()
+        filename.insert(0,msg)
         self.saveSubjectName=filename
         saveButton=Button(self.root,text="save",command=self.save)
         cancleButton=Button(self.root,text="cancle",command=self.cleanup)
@@ -218,7 +234,7 @@ class DataRecorder:
 
 
 def post(result):
-    requests.post('http://10.151.42.251:8000/api/pizza/da',json={"data":result.lower()})
+    # requests.post('http://10.151.42.251:8000/api/pizza/da',json={"data":result.lower()})
     pass
 def print_progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100):
     """
@@ -250,7 +266,7 @@ if __name__ == '__main__':
     try:
         pass
 
-        recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="data_repo/raw/Enes_6_6_30_120/",isThresholdRelativeToMean=True,upthreshold=6,downthreshold=6,postLength=120,preLength=30)
+        recorder=DataRecorder(tty='/dev/ttyACM0',serialSpeed=115200,outputPath="data_repo/raw/6_6_1_120/Omar/",isThresholdRelativeToMean=True,upthreshold=6,downthreshold=6,postLength=120,preLength=1)
         recorder.addCallBack(pr)
         recorder.registerFemgHandler(recorder.examnLiveData)
         recorder.addCallBack(recorder.thresholdCapture)

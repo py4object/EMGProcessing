@@ -49,7 +49,7 @@ for att in attr:
 result+="@DATA\n"
 
 for i in range(0,len(values)):
-    result+=("{0} ,").format(inputs[i].split("_")[1].strip(".raw"))
+    result+=("{0} ,").format(inputs[i].split("_")[-1].strip(".raw"))
     result+=( ",".join(format(x, "10.3f") for x in values[i]))
 
     result+=("\n")

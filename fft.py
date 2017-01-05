@@ -19,10 +19,10 @@ indexV=arange(1,len(FreqVector))
 subplot(2,1,1)
 
 
-# plot(Ts,y)
+plot(Ts,y)
 xlabel('Time')
 ylabel('Amplitude')
-# subplot(2,1,2)
+subplot(2,1,2)
 Femg=abs(Femg[indexV])
 # print (len(Femg))
 FreqVector=delete(FreqVector,len(FreqVector)-1)
@@ -37,11 +37,11 @@ result2=Femg[0:len(result)]
 fname=sys.argv[1]
 fname=fname.replace("raw","fq")
 # print(fname)
-savetxt(fname=fname,X=result2)
+# savetxt(fname=fname,X=result2)
 # savetxt(fname=sys.argv[1]+"vect",X=FreqVector)
 
-# plot(FreqVector,Femg)1121
+# plot(FreqVector,Femg)
 # figure()
-subplot(1,1,1)
+# subplot(1,1,1)
 plot(result,result2)
-# show()#
+show()#

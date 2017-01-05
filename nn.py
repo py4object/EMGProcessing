@@ -69,7 +69,10 @@ clf2=MLPClassifier(warm_start=True,hidden_layer_sizes=(38,),random_state=0,max_i
 def init():
     global clf1,clf2
     dataset=[
-    "data_repo/arff/UPDOWN134_6_6.arff",
+    # "data_repo/arff/UPDOWN134_6_6.arff",
+    # "data_repo/arff/6_6_1_120_Omar.arff",
+    # "data_repo/arff/hoca_6_6_1_120.arff",
+    "omar10.arff"
     # "data_repo/arff/50_6_6train.arff",
     # "data_repo/arff/AbudUpDown24_6_6.arff",
     # "data_repo/arff/AbudUpDown35_6_6.arff",
@@ -77,6 +80,7 @@ def init():
     # "data_repo/arff/50_6_6train.arff",
     # "data_repo/arff/Omar46_6_6.arff",
     # "data_repo/arff/omarTest19_6_6.arff"
+    # 'data_repo/arff/hoca_6_6_1_120.arff'
     ]
 
     for i in range(3):
@@ -84,11 +88,14 @@ def init():
             traningset=get_data_from_arff(data)
             F=traningset['UP']+traningset['DOWN']
             Y=[[1,0] for i in traningset['UP']]+[[0,1] for i in traningset['DOWN']]
+
             clf1.fit(F,Y)
             clf2.fit(F,Y)
+
 def classfiy1(array):
     global clf1
     result =clf1.predict(array)[0]
+    print clf1.predict_proba(array)
     if compareArray(result,[1,0]):
         return 'UP'
     elif compareArray(result,[0,1]):
@@ -98,6 +105,7 @@ def classfiy1(array):
 
 def classfiy2(array):
     global clf2
+    print clf2.predict_proba(array)
     result =clf2.predict(array)[0]
     if compareArray(result,[1,0]):
         return 'UP'
